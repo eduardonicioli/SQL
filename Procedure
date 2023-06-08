@@ -111,3 +111,125 @@ END
 
 EXEC obter_valor_total_vendas @codigo_vendedor = 4;
 
+--LISTA 02
+
+--EXERCÍCIO A
+CREATE TABLE regiao(
+    cod_regiao INT PRIMARY KEY,
+    nome_regiao VARCHAR(15)
+)
+
+--EXERCÍCIO B
+CREATE TABLE departamento(
+    cod_departamento INT IDENTITY PRIMARY KEY,
+    nome_departamento VARCHAR(20),
+    cod_regiao INT,
+    FOREIGN KEY (cod_regiao) REFERENCES dbo.regiao(cod_regiao)
+)
+
+--EXERCÍCIO 1
+REATE PROCEDURE inserir_regiao
+    @nome_regiao VARCHAR(15)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    BEGIN TRANSACTION;
+
+    -- Inserir nova região
+    INSERT INTO regiao (Nome_regiao)
+    VALUES (@nome_regiao);
+
+    -- Verificar o resultado da inserção
+    IF @@ERROR <> 0
+    BEGIN
+        ROLLBACK;
+        PRINT 'Erro ao inserir nova região. Transação revertida.';
+    END
+    ELSE
+    BEGIN
+        COMMIT;
+        PRINT 'Nova região inserida com sucesso. Transação efetivada.';
+    END;
+END
+
+EXEC inserir_regiao @nome_regiao = 'Bali';
+
+--EXERCÍCIO 2
+CREATE PROCEDURE inserir_departamento
+    @nome_departamento VARCHAR(50)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    BEGIN TRANSACTION;
+
+    -- Inserir novo departamento com região nula
+    INSERT INTO departamento (Nome_departamento, Cod_regiao)
+    VALUES (@nome_departamento, NULL);
+
+    -- Verificar o resultado da inserção
+    IF @@ERROR <> 0
+    BEGIN
+        ROLLBACK;
+        PRINT 'Erro ao inserir novo departamento. Transação revertida.';
+    END
+    ELSE
+    BEGIN
+        COMMIT;
+        PRINT 'Novo departamento inserido com sucesso. Transação efetivada.';
+    END;
+END
+
+EXEC inserir_departamento @nome_departamento = 'Novo Departamento';
+
+--EXERCÍCIO 3
+CREATE PROCEDURE alterar_codigo_regiao_departamento
+    @codigo_departamento INT,
+    @nome_regiao VARCHAR(15)
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    BEGIN TRANSACTION;
+
+    -- Obter o código da região a partir do nome da região
+    DECLARE @codigo_regiao INT;
+
+    SELECT @codigo_regiao = Cod_regiao
+    FROM regiao
+    WHERE Nome_regiao = @nome_regiao;
+
+    -- Verificar se o nome da região existe na tabela região
+    IF @codigo_regiao IS NULL
+    BEGIN
+        PRINT 'O nome da região não existe na tabela região.';
+        RETURN;
+    END;
+
+    -- Verificar se o nome da região está duplicado na tabela região
+    IF @@ROWCOUNT > 1
+    BEGIN
+        PRINT 'O nome da região está duplicado na tabela região.';
+        RETURN;
+    END;
+
+    -- Alterar o código da região na tabela departamento
+    UPDATE departamento
+    SET Cod_regiao = @codigo_regiao
+    WHERE Cod_departamento = @codigo_departamento;
+
+    -- Verificar o resultado da alteração
+    IF @@ERROR <> 0
+    BEGIN
+        ROLLBACK;
+        PRINT 'Algum erro ocorreu ao alterar o código da região do departamento. Transação revertida.';
+    END
+    ELSE
+    BEGIN
+        COMMIT;
+        PRINT 'Código da região do departamento alterado com sucesso. Transação efetivada.';
+    END;
+END
+
+EXEC alterar_codigo_regiao
