@@ -1,1 +1,31 @@
 USE PEDIDOS
+
+-- Exercicío A
+CREATE PROCEDURE atualizar_salarios
+    @codigo INT
+AS
+BEGIN
+    SET NOCOUNT ON;
+
+    IF @codigo = 2
+    BEGIN
+        UPDATE cod_vendedor
+        SET salario_fixo = salario_fixo * 1.2
+        WHERE faixa_comissao = 'B';
+    END
+    ELSE IF @codigo = 3
+    BEGIN
+        UPDATE cod_vendedor
+        SET salario_fixo = salario_fixo * 1.3
+        WHERE faixa_comissao = 'B';
+    END
+    ELSE IF @codigo = 4
+    BEGIN
+        UPDATE cod_vendedor
+        SET salario_fixo = salario_fixo * 1.4
+        WHERE faixa_comissao = 'B';
+    END
+
+    SELECT *
+    FROM dbo.vendedor;
+END
